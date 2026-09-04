@@ -1,16 +1,52 @@
-# React + Vite
+# StyleShop — Frontend React
 
-This template provides a minimal setup to get React working in Vite with HMR and some Oxlint rules.
+SPA desarrollada con **React 18** + **Vite** + **Tailwind CSS v3**.
 
-Currently, two official plugins are available:
+## Requisitos
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+- Node.js 18+
+- npm 9+
 
-## React Compiler
+## Instalar dependencias
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+```bash
+npm install
+```
 
-## Expanding the Oxlint configuration
+## Ejecutar en desarrollo
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and Oxlint's TypeScript related rules in your project.
+```bash
+npm run dev
+```
+
+App en: **http://localhost:5173**
+
+## Estructura del proyecto
+
+```
+src/
+├── components/      ← Layout.jsx, Subnav.jsx
+├── pages/           ← Login, Dashboard, Productos, Ventas, Categorias, Clientes, Pagos
+├── services/        ← api.js (Axios base), authService, productoService, ventaService, ...
+├── App.jsx          ← Rutas con React Router DOM
+├── main.jsx
+└── index.css        ← Tailwind + estilos globales
+```
+
+## Páginas
+
+| Ruta | Componente |
+|------|-----------|
+| `/login` | Login |
+| `/dashboard` | Dashboard |
+| `/productos` | Productos |
+| `/productos/nuevo` | NuevoProducto |
+| `/productos/:id/editar` | NuevoProducto |
+| `/ventas` | Ventas |
+| `/ventas/nueva` | NuevaVenta |
+| `/ventas/:id/editar` | NuevaVenta |
+| `/categorias` | Categorias |
+| `/clientes` | Clientes |
+| `/pagos` | Pagos |
+
+> El frontend requiere que el backend esté corriendo en `http://localhost:8080`
