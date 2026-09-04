@@ -1,63 +1,103 @@
+import { useEffect, useState } from 'react'
 import Layout from '../components/Layout'
-
-const stats = [
-  { icon: 'bi-box-seam',    value: '5',    label: 'Productos',   color: '#2196f3' },
-  { icon: 'bi-receipt',     value: '5',    label: 'Ventas',      color: '#f59e0b' },
-  { icon: 'bi-people',      value: '5',    label: 'Clientes',    color: '#1b7a3b' },
-  { icon: 'bi-credit-card', value: '$485', label: 'Total cobrado', color: '#c62828' },
-]
-
-const recentSales = [
-  { id: 1, producto: 'Camisa Oxford',   cliente: 'Carlos Mamani', total: '$90.00',  estado: 'Completado', badge: 'success' },
-  { id: 2, producto: 'Pantalón Chino',  cliente: 'Luis Quispe',   total: '$60.00',  estado: 'Completado', badge: 'success' },
-  { id: 3, producto: 'Chaqueta Casual', cliente: 'Pedro Flores',  total: '$95.00',  estado: 'Pendiente',  badge: 'warning' },
-  { id: 4, producto: 'Polo Clásico',    cliente: 'José Rojas',    total: '$90.00',  estado: 'Completado', badge: 'success' },
-  { id: 5, producto: 'Jean Slim Fit',   cliente: 'Marco Condori', total: '$150.00', estado: 'En proceso', badge: 'info'    },
-]
+import productoService from '../services/productoService'
+import ventaService from '../services/ventaService'
+import clienteService from '../services/clienteService'
+import pagoService from '../services/pagoService'
 
 export default function Dashboard() {
+  const [stats, setStats] = useState({ productos: 0, ventas: 0, clientes: 0, ingresos: 0 })
+  const [ventasRecientes, setVentasRecientes] = useState([])
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    Promise.all([
+      productoService.listar(),
+      ventaService.listar(),
+      clienteService.listar(),
+      pagoService.listar(),
+    ]).then(([prods, ventas, clientes, pagos]) => {
+      const ingresos = pagos.data
+        .filter(p => p.estado === 'PAGADO')
+        .reduce((sum, p) => sum + (p.monto || 0), 0)
+
+      setStats({
+        productos: prods.data.length,
+        ventas: ventas.data.length,
+        clientes: clientes.data.length,
+        ingresos,
+      })
+      setVentasRecientes(ventas.data.slice(-5).reverse())
+    }).catch(console.error)
+    .finally(() => setLoading(false))
+  }, [])
+
+  const statCards = [
+    { label: 'Productos', value: stats.productos, icon: 'bi-box-seam',     color: '#2196f3' },
+    { label: 'Ventas',    value: stats.ventas,    icon: 'bi-receipt',       color: '#8b5cf6' },
+    { label: 'Clientes',  value: stats.clientes,  icon: 'bi-people',        color: '#10b981' },
+    { label: 'Ingresos',  value: `Bs ${stats.ingresos.toFixed(2)}`, icon: 'bi-cash-stack', color: '#f59e0b' },
+  ]
+
   return (
     <Layout>
       <div className="page-header">
-        <h1><i className="bi bi-speedometer2"></i> Panel Principal</h1>
+        <h1><i className="bi bi-speedometer2"></i> Dashboard</h1>
+        <span style={{ color: 'var(--color-muted)', fontSize: '0.85rem' }}>
+          {new Date().toLocaleDateString('es-BO', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
+        </span>
       </div>
 
-      <section className="cards-grid">
-        {stats.map(({ icon, value, label }) => (
-          <div className="info-card" key={label}>
-            <div className="info-card-icon">
-              <i className={`bi ${icon}`}></i>
+      {/* Stats */}
+      <div className="stats-grid">
+        {statCards.map(s => (
+          <div className="stat-card" key={s.label}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <span className="stat-label">{s.label}</span>
+              <i className={`bi ${s.icon}`} style={{ fontSize: '1.4rem', color: s.color }}></i>
             </div>
-            <div className="info-card-data">
-              <span className="info-card-value">{value}</span>
-              <span className="info-card-label">{label}</span>
+            <div className="stat-value" style={{ color: s.color }}>
+              {loading ? '—' : s.value}
             </div>
+            <div className="stat-sub">Registros en el sistema</div>
           </div>
         ))}
-      </section>
+      </div>
 
+      {/* Ventas recientes */}
       <section className="table-section">
         <div className="table-toolbar">
           <span className="table-toolbar-title">Ventas recientes</span>
         </div>
-        <table>
-          <thead>
-            <tr>
-              <th>#</th><th>Producto</th><th>Cliente</th><th>Total</th><th>Estado</th>
-            </tr>
-          </thead>
-          <tbody>
-            {recentSales.map(s => (
-              <tr key={s.id}>
-                <td>{s.id}</td>
-                <td>{s.producto}</td>
-                <td>{s.cliente}</td>
-                <td>{s.total}</td>
-                <td><span className={`badge badge-${s.badge}`}>{s.estado}</span></td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+        <div className="table-wrapper">
+          {loading ? <p className="p-4 text-center text-gray-400">Cargando...</p> : (
+            <table>
+              <thead>
+                <tr>
+                  <th>#</th><th>Fecha</th><th>Cliente</th><th>Producto</th><th>Total</th><th>Estado</th>
+                </tr>
+              </thead>
+              <tbody>
+                {ventasRecientes.length === 0
+                  ? <tr><td colSpan={6} style={{ textAlign: 'center', padding: '1.5rem', color: 'var(--color-muted)' }}>No hay ventas aún</td></tr>
+                  : ventasRecientes.map(v => (
+                    <tr key={v.id}>
+                      <td>#{v.id}</td>
+                      <td>{v.fecha}</td>
+                      <td>{v.cliente?.nombre || '—'}</td>
+                      <td>{v.producto?.nombre || '—'}</td>
+                      <td><strong>Bs {v.total?.toFixed(2)}</strong></td>
+                      <td>
+                        <span className={`badge ${v.estado === 'COMPLETADO' ? 'badge-success' : v.estado === 'CANCELADO' ? 'badge-danger' : 'badge-warning'}`}>
+                          {v.estado}
+                        </span>
+                      </td>
+                    </tr>
+                  ))}
+              </tbody>
+            </table>
+          )}
+        </div>
       </section>
     </Layout>
   )
