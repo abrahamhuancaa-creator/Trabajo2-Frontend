@@ -22,7 +22,7 @@ export default function Productos() {
 
   const eliminar = async id => {
     if (!confirm('¿Eliminar este producto?')) return
-    await api.delete(`/productos/${id}`)
+    await productoService.eliminar(id)
     setProductos(prev => prev.filter(p => p.id !== id))
   }
 

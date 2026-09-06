@@ -16,7 +16,7 @@ export default function Ventas() {
 
   const eliminar = async id => {
     if (!confirm('¿Eliminar esta venta?')) return
-    await api.delete(`/ventas/${id}`)
+    await ventaService.eliminar(id)
     setVentas(prev => prev.filter(v => v.id !== id))
   }
 

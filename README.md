@@ -19,7 +19,7 @@ npm install
 npm run dev
 ```
 
-App en: **http://localhost:5173**
+App en: **[http://localhost:5173](http://localhost:5173)**
 
 ## Estructura del proyecto
 
@@ -49,4 +49,4 @@ src/
 | `/clientes` | Clientes |
 | `/pagos` | Pagos |
 
-> El frontend requiere que el backend esté corriendo en `http://localhost:8080`
+> El frontend requiere que el backend esté corriendo en [http://localhost:8080](http://localhost:8080)
